@@ -1,0 +1,5 @@
+{
+  "name": "AI重生爽文生成器",
+  "description": "基于Gemini 3 Pro模型的专业网文创作工具，采用结构化工作流：设定->大纲->细纲->正文，确保逻辑严密与极致爽感。",
+  "requestFramePermissions": []
+}
