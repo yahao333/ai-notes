@@ -2,9 +2,17 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Character, WorldSetting, PlotPoint, ChapterOutline, ChapterContent, ModelProvider } from "../types";
 
-// 初始化 Gemini 客户端
-// 必须确保环境变量 API_KEY 已设置
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// 延迟初始化 Gemini 客户端，确保只在需要时才创建
+// 使用 import.meta.env.VITE_GEMINI_API_KEY 获取环境变量
+let ai: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!ai) {
+    const apiKey = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_GEMINI_API_KEY) || process.env.GEMINI_API_KEY || '';
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+}
 
 // Google 模型默认值
 const DEFAULT_GOOGLE_MODEL = "gemini-3-pro-preview";
@@ -280,7 +288,7 @@ export const generateCharactersAndWorld = async (
                 { role: "user", content: prompt }
             ], aliyunApiKey, responseSchemaObj);
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
                 config: {
@@ -377,7 +385,7 @@ export const generateMainPlot = async (
             ], aliyunApiKey, aliyunSchema);
             return res.plot_points || res; 
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
                 config: {
@@ -485,7 +493,7 @@ export const generateChapterOutlines = async (
             ], aliyunApiKey, aliyunSchema);
             return res.chapters;
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
                 config: {
@@ -611,7 +619,7 @@ export const generateNextChapterOutlines = async (
             ], aliyunApiKey, aliyunSchema);
             return res.chapters;
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
                 config: {
@@ -680,7 +688,7 @@ export const generateBatchSummary = async (
             ], aliyunApiKey, aliyunSchema);
             return res.summaryTitle;
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName, 
                 contents: prompt,
                 config: {
@@ -752,7 +760,7 @@ export const compressStoryHistory = async (
                     { role: "user", content: prompt }
                 ], aliyunApiKey);
             } else {
-                const response = await ai.models.generateContent({
+                const response = await getAiClient().models.generateContent({
                     model: googleModelName,
                     contents: prompt,
                 });
@@ -844,7 +852,7 @@ export const streamChapterContent = async (
                 onChunk(chunk);
             }
         } else {
-            const responseStream = await ai.models.generateContentStream({
+            const responseStream = await getAiClient().models.generateContentStream({
                 model: googleModelName,
                 contents: prompt,
             });
@@ -932,7 +940,7 @@ export const generateFullChapterContent = async (
                 { role: "user", content: prompt }
             ], aliyunApiKey);
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
             });
@@ -1017,7 +1025,7 @@ export const generateBookTitles = async (
             ], aliyunApiKey, aliyunSchema);
             return res.titles;
         } else {
-            const response = await ai.models.generateContent({
+            const response = await getAiClient().models.generateContent({
                 model: googleModelName,
                 contents: prompt,
                 config: {
